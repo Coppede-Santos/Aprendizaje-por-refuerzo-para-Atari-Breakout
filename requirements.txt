@@ -1,0 +1,6 @@
+gymnasium[atari,accept-rom-license]
+matplotlib
+numpy
+keyboard
+ale-py>=0.9.1
+
