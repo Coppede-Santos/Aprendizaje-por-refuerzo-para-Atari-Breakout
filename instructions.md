@@ -38,10 +38,10 @@
 
    Correr RandomAgent por 10 episodios:
    ```bash
-   python metrics/collect_metrics.py --agent RandomAgent
+   python metrics/collect_metrics.py --agent R
    ```
 
    Correr FollowBallAgent por 5 episodios y ver cómo juega:
    ```bash
-   python metrics/collect_metrics.py --agent FollowBallAgent --episodes 5 --render
+   python metrics/collect_metrics.py --agent F --episodes 5 --render
    ```

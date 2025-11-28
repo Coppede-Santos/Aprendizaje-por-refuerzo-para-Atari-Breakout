@@ -16,14 +16,15 @@ def main():
     agent = QLearningAgent(env.action_space)
     
     # Load existing model if available
-    model_path = "q_table.pkl"
+    model_path = "agents/qLearning/q_table.pkl"
     #agent.load(model_path)
 
-    episodes = 50
+    episodes = 100
     save_interval = 10
 
     for episode in range(episodes):
         obs, info = env.reset()
+        agent.reset_episode()
         total_reward = 0
         terminated = False
         truncated = False
@@ -65,7 +66,7 @@ def main():
                     if dist < prev_dist:
                         shaped_reward += 0.05
             
-            agent.update(prev_obs, action, shaped_reward, obs)
+            agent.update(prev_obs, action, shaped_reward, obs, done=(terminated or truncated))
             
             total_reward += reward # Keep tracking original reward for metrics
             prev_obs = obs
@@ -73,6 +74,7 @@ def main():
             prev_ball_x, prev_ball_y, prev_paddle_x = ball_x, ball_y, paddle_x
 
         agent.decay_epsilon()
+        agent.decay_alpha()
         
         if (episode + 1) % 10 == 0:
             print(f"Episode {episode + 1}: Reward = {total_reward}, Epsilon = {agent.epsilon:.4f}")

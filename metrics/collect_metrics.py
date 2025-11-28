@@ -14,11 +14,11 @@ from agents.follow_ball_agent import FollowBallAgent
 from agents.qLearning.qlearning_agent import QLearningAgent
 
 def get_agent(agent_name, env):
-    if agent_name == "RandomAgent":
+    if agent_name == "R":
         return RandomAgent(env.action_space)
-    elif agent_name == "FollowBallAgent":
+    elif agent_name == "Q":
         return FollowBallAgent(env.action_space)
-    elif agent_name == "QLearningAgent":
+    elif agent_name == "L":
         agent = QLearningAgent(env.action_space)
         agent.load("q_table.pkl")
         return agent

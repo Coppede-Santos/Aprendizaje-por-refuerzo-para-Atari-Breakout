@@ -3,13 +3,41 @@ import pickle
 import os
 
 class QLearningAgent:
-    def __init__(self, action_space, alpha=0.5, gamma=0.99, epsilon=1.0, epsilon_decay=0.9995, epsilon_min=0.01):
+    def __init__(
+        self,
+        action_space,
+        alpha=1.0,
+        gamma=0.99,
+        epsilon=1.0,
+        epsilon_decay=0.9995,
+        epsilon_min=0.01,
+        alpha_decay=1.0,
+        alpha_min=0.05,
+        grid_size=10,
+    ):
+        """
+        Basic tabular Q-Learning agent with simple vision-based state extraction.
+
+        Parameters:
+        - action_space: gymnasium action space
+        - alpha: learning rate
+        - gamma: discount factor
+        - epsilon: initial exploration rate
+        - epsilon_decay: multiplicative epsilon decay per episode/step (caller decides when to call decay)
+        - epsilon_min: exploration floor
+        - alpha_decay: multiplicative alpha decay factor applied in decay_alpha()
+        - alpha_min: minimal learning rate
+        - grid_size: bin size (in pixels) used to discretize positions
+        """
         self.action_space = action_space
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.epsilon_min = epsilon_min
+        self.alpha_decay = alpha_decay
+        self.alpha_min = alpha_min
+        self.grid_size = grid_size
         self.q_table = {}
         self.prev_ball_x = None
         self.prev_ball_y = None
@@ -74,11 +102,11 @@ class QLearningAgent:
 
         # Bins
         # Screen is roughly 160x210
-        # Grid size: 10x10 pixels?
-        grid_size = 10
-        ball_x_bin = ball_x // grid_size
-        ball_y_bin = ball_y // grid_size
-        paddle_x_bin = paddle_x // grid_size
+        grid_size = self.grid_size
+        # Clamp to avoid out-of-range values if detection is noisy
+        ball_x_bin = int(np.clip(ball_x // grid_size, 0, 160 // grid_size))
+        ball_y_bin = int(np.clip(ball_y // grid_size, 0, 210 // grid_size))
+        paddle_x_bin = int(np.clip(paddle_x // grid_size, 0, 160 // grid_size))
 
         # Velocity
         if self.prev_ball_x is None or self.prev_ball_y is None:
@@ -105,10 +133,14 @@ class QLearningAgent:
         # Greedy action
         if state not in self.q_table:
             self.q_table[state] = np.zeros(self.action_space.n)
-        
-        return int(np.argmax(self.q_table[state]))
 
-    def update(self, observation, action, reward, next_observation):
+        q_values = self.q_table[state]
+        # Random tie-breaking among best actions (prevents action bias)
+        max_q = np.max(q_values)
+        best_actions = np.flatnonzero(q_values == max_q)
+        return int(np.random.choice(best_actions))
+
+    def update(self, observation, action, reward, next_observation, done=False):
         state = self.get_state(observation)
         next_state = self.get_state(next_observation)
 
@@ -118,9 +150,8 @@ class QLearningAgent:
         if state not in self.q_table:
             self.q_table[state] = np.zeros(self.action_space.n)
         
-        if next_state is None:
-            # Terminal state or lost ball, assume 0 future value?
-            # Or just ignore next max q
+        # Compute TD target (no bootstrap if terminal)
+        if done:
             target = reward
         else:
             if next_state not in self.q_table:
@@ -132,7 +163,16 @@ class QLearningAgent:
     def decay_epsilon(self):
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
 
+    def decay_alpha(self):
+        self.alpha = max(self.alpha_min, self.alpha * self.alpha_decay)
+
+    def reset_episode(self):
+        """Call at the beginning of each episode to clear internal momentum."""
+        self.prev_ball_x = None
+        self.prev_ball_y = None
+
     def save(self, filename):
+        # Backward-compatible: keep saving only the q_table
         with open(filename, 'wb') as f:
             pickle.dump(self.q_table, f)
         print(f"Q-table saved to {filename}")
