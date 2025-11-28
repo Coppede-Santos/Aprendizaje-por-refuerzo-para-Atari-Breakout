@@ -11,12 +11,17 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from agents.random_agent import RandomAgent
 from agents.follow_ball_agent import FollowBallAgent
+from agents.qLearning.qlearning_agent import QLearningAgent
 
 def get_agent(agent_name, env):
     if agent_name == "RandomAgent":
         return RandomAgent(env.action_space)
     elif agent_name == "FollowBallAgent":
         return FollowBallAgent(env.action_space)
+    elif agent_name == "QLearningAgent":
+        agent = QLearningAgent(env.action_space)
+        agent.load("q_table.pkl")
+        return agent
     else:
         raise ValueError(f"Unknown agent: {agent_name}")
 
@@ -29,7 +34,10 @@ def run_episode(env, agent, render=False):
     truncated = False
 
     while not (terminated or truncated):
-        action = agent.get_action(obs)
+        if hasattr(agent, 'get_action') and agent.__class__.__name__ == 'QLearningAgent':
+             action = agent.get_action(obs, training=False)
+        else:
+             action = agent.get_action(obs)
         obs, reward, terminated, truncated, info = env.step(action)
         
         total_reward += reward
