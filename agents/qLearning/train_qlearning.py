@@ -16,8 +16,8 @@ def main():
     agent = QLearningAgent(env.action_space)
     
     # Load existing model if available
-    model_path = "agents/qLearning/q_table.pkl"
-    #agent.load(model_path)
+    model_path = "q_table.pkl"
+    agent.load(model_path)
 
     episodes = 100
     save_interval = 10

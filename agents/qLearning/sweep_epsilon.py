@@ -175,7 +175,7 @@ def main():
         episodes_per_value=episodes_per_value,
         epsilon_decay=0.9995,
         epsilon_min=0.01,
-        alpha=1,
+        alpha=0.3,
         gamma=0.99,
     )
 

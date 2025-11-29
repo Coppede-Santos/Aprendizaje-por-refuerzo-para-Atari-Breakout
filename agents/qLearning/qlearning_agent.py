@@ -6,9 +6,9 @@ class QLearningAgent:
     def __init__(
         self,
         action_space,
-        alpha=1.0,
+        alpha=0.3,
         gamma=0.99,
-        epsilon=1.0,
+        epsilon=0.3,
         epsilon_decay=0.9995,
         epsilon_min=0.01,
         alpha_decay=1.0,
