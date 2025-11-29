@@ -3,4 +3,6 @@ matplotlib
 numpy
 keyboard
 ale-py>=0.9.1
+torch
+
 
