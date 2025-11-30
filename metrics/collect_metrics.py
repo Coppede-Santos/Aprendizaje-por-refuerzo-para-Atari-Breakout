@@ -12,15 +12,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from agents.random_agent import RandomAgent
 from agents.follow_ball_agent import FollowBallAgent
 from agents.qLearning.qlearning_agent import QLearningAgent
+from agents.dqn.dqn_agent import ConvDQNAgent
 
 def get_agent(agent_name, env):
     if agent_name == "R":
         return RandomAgent(env.action_space)
-    elif agent_name == "Q":
+    elif agent_name == "F":
         return FollowBallAgent(env.action_space)
-    elif agent_name == "L":
+    elif agent_name == "Q":
         agent = QLearningAgent(env.action_space)
         agent.load("q_table.pkl")
+        return agent
+    elif agent_name == "DQN":
+        agent = ConvDQNAgent(env.action_space)
+        # Load the latest checkpoint. Assumes the script is run from the project root.
+        agent.load("conv_dqn_breakout_latest.pth")
+        # Disable training by setting learn_start to a very large number
+        agent.learn_start = sys.maxsize
         return agent
     else:
         raise ValueError(f"Unknown agent: {agent_name}")
@@ -33,19 +41,34 @@ def run_episode(env, agent, render=False):
     terminated = False
     truncated = False
 
+    # Special handling for agents that need state reset
+    if isinstance(agent, ConvDQNAgent):
+        agent.reset_episode(obs)
+
     while not (terminated or truncated):
-        if hasattr(agent, 'get_action') and agent.__class__.__name__ == 'QLearningAgent':
-             action = agent.get_action(obs, training=False)
-        else:
-             action = agent.get_action(obs)
-        obs, reward, terminated, truncated, info = env.step(action)
-        
+        # Determine action based on agent type
+        if isinstance(agent, QLearningAgent):
+            action = agent.get_action(obs, training=False)
+        elif isinstance(agent, ConvDQNAgent):
+            action = agent.get_action(training=False)
+        else:  # RandomAgent, FollowBallAgent
+            action = agent.get_action(obs)
+
+        next_obs, reward, terminated, truncated, info = env.step(action)
+
+        # Update ConvDQNAgent's internal state (frame stack)
+        if isinstance(agent, ConvDQNAgent):
+            # The step method updates the internal frame stack.
+            # We've disabled learning, but it will still fill the replay buffer.
+            agent.step(next_obs, action, reward, terminated or truncated)
+
+        obs = next_obs
         total_reward += reward
         steps += 1
-        
+
         if reward > 0:
             brick_hits += 1
-            
+
         if render:
             time.sleep(0.01)
 
