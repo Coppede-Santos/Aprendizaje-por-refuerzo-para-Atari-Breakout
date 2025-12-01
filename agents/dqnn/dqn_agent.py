@@ -4,9 +4,9 @@ import gymnasium as gym
 import os
 
 class StableBaselinesDQNAgent:
-    def __init__(self, env):
+    def __init__(self, env, **kwargs):
         self.env = DummyVecEnv([lambda: env])
-        self.model = DQN("CnnPolicy", self.env, verbose=0)
+        self.model = DQN("CnnPolicy", self.env, verbose=0, **kwargs)
 
     def get_action(self, obs, training=True):
         # The observation is already handled by the VecEnv wrapper
