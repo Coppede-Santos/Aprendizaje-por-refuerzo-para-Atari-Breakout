@@ -9,17 +9,12 @@ Este documento define las métricas que se utilizarán para evaluar el desempeñ
 - **Fuente**: Retornado por `env.step()` como `reward`.
 - **Interpretación**: Indica qué tan bien jugó el agente. Mayor puntaje es mejor.
 
-### 2. Vidas (Lives)
-- **Definición**: El número de vidas restantes del agente.
-- **Fuente**: `info['lives']`.
-- **Interpretación**: Útil para penalizar la pérdida de vidas o para terminar el entrenamiento prematuramente si se desea. Comienza en 5.
-
-### 3. Duración del Episodio (Episode Length)
+### 2. Duración del Episodio (Episode Length)
 - **Definición**: El número de pasos (frames) que duró el episodio.
 - **Fuente**: Contador de pasos en el bucle principal o `info['episode_frame_number']`.
 - **Interpretación**: Episodios más largos pueden indicar supervivencia, pero no necesariamente éxito si no se obtienen puntos.
 
-### 4. Golpes a Ladrillos (Brick Hits)
+### 3. Golpes a Ladrillos (Brick Hits)
 - **Definición**: Número de veces que la bola golpea un ladrillo.
 - **Fuente**: Inferido cuando `reward > 0`.
 - **Interpretación**: Mide la efectividad ofensiva del agente.
