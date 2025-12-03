@@ -66,7 +66,7 @@ def get_agent(agent_name, env):
         model_path = os.path.join(
             os.path.dirname(__file__), 
             '..', 
-            'agents', 'dqn', 'entrenamiento_10', 'RESULTADOS_BREAKOUT_10M', 'entrenamiento_breakout_10M', 'modelos', 'dqn_breakout_FINAL_10M.zip'
+            'agents', 'dqn', 'entrenamiento_10', 'RESULTADOS_BREAKOUT_10M', 'entrenamiento_breakout_10M', 'modelos', 'best_model.zip'
         )
         if not os.path.exists(model_path):
              raise FileNotFoundError(f"DQN model not found at {model_path}")
