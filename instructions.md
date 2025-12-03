@@ -17,31 +17,32 @@
 
 4. Recolección de Métricas
 
-   Puedes recolectar métricas para diferentes agentes usando el script `collect_metrics.py`.
+   Puedes recolectar métricas para todos los agentes o agentes específicos usando el script `collect_metrics.py`.
 
-   **Uso básico:**
+   **Uso básico (correr todos los agentes):**
    ```bash
-   python metrics/collect_metrics.py --agent <NombreDelAgente>
+   python metrics/collect_metrics.py
    ```
 
    **Agentes Disponibles:**
-   - `RandomAgent` (por defecto)
-   - `FollowBallAgent`
+   - `Random`
+   - `FollowBall`
+   - `QLearning`
+   - `DQN`
 
    **Opciones:**
-   - `--agent`: Nombre del agente a ejecutar.
-   - `--episodes`: Número de episodios a correr (por defecto: 10).
+   - `--agents`: Lista de agentes a ejecutar (por defecto corre todos).
+   - `--episodes`: Número de episodios a correr por agente (por defecto: 10).
    - `--render`: Habilitar renderizado para ver al agente jugar.
-   - `--output`: Ruta al archivo CSV de salida (por defecto: `metrics/<NombreDelAgente>.csv`).
 
    **Ejemplos:**
 
-   Correr RandomAgent por 10 episodios:
+   Correr todos los agentes por 10 episodios:
    ```bash
-   python metrics/collect_metrics.py --agent R
+   python metrics/collect_metrics.py
    ```
 
-   Correr FollowBallAgent por 5 episodios y ver cómo juega:
+   Correr solo Random y DQN por 5 episodios y ver cómo juegan:
    ```bash
-   python metrics/collect_metrics.py --agent F --episodes 5 --render
+   python metrics/collect_metrics.py --agents Random DQN --episodes 5 --render
    ```

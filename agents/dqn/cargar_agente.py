@@ -14,7 +14,7 @@ env = VecFrameStack(env, n_stack=4)
 
 # 2. Cargar tu archivo .zip (asegúrate de que esté en la misma carpeta)
 script_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(script_dir, "mi_agente_breakout")
+model_path = os.path.join(script_dir, "entrenamiento_10\RESULTADOS_BREAKOUT_10M\entrenamiento_breakout_10M\modelos\dqn_breakout_FINAL_10M.zip")
 model = DQN.load(model_path, env=env)
 
 # 3. Jugar
