@@ -118,3 +118,87 @@ Además, para garantizar estabilidad durante el entrenamiento, se utilizaron mec
 - Al finalizar se guardó el modelo definitivo `dqn_breakout_FINAL_10M.zip`.
 
 En conjunto, esta estrategia permitió entrenar un agente DQN robusto, capaz de aprender comportamientos complejos en Breakout, aprovechando procesamiento paralelo y GPU gratuita de Kaggle.
+
+### Q-Learning
+
+Para el agente tabular de Q-Learning se diseñó una estrategia específica orientada a explotar información geométrica del entorno (posición de la pelota y de la pala) sin recurrir a redes neuronales. El objetivo principal fue aprender una política que mantenga la pelota en juego y logre impactar la mayor cantidad posible de ladrillos, utilizando una representación de estado discreta y recompensas moldeadas (*reward shaping*).
+
+#### Representación del estado
+
+En lugar de trabajar directamente con la imagen cruda, se implementó un detector simple sobre los frames RGB del entorno `ALE/Breakout-v5`:
+
+- Se detecta la **pala** en la parte inferior de la pantalla mediante umbrales de color.
+- Se detecta la **pelota** en la zona de juego, también por color, tomando el píxel más bajo (más cercano a la pala).
+- A partir de estas detecciones se construye un estado discreto de la forma:
+
+`ball_x_bin`, `ball_y_bin`, `paddle_x_bin`, `dx` y `dy` 
+
+donde:
+
+- `ball_x_bin`, `ball_y_bin` y `paddle_x_bin` son las posiciones de pelota y pala discretizadas en una grilla de tamaño `grid_size = 10` píxeles.
+- `dx`, `dy` indican la **dirección de movimiento de la pelota** (–1, 0 o 1), calculada a partir de la posición actual y la anterior.
+- En el caso de no detectar pelota (por ruido u oclusión), se utiliza un estado genérico `(-1, -1, -1, 0, 0)`.
+
+Este estado discreto se usa como clave de la **Q-table**, donde cada estado almacena un vector de valores Q para cada acción disponible.
+
+#### Reward shaping
+
+Aunque se conserva la recompensa original del entorno para las métricas, durante el entrenamiento se empleó una recompensa moldeada (*shaped_reward*) para acelerar el aprendizaje. A partir del `reward` del entorno, se aplicaron las siguientes modificaciones:
+
+- **Pérdida de vida**:  
+  - Penalización fuerte de `–1.0` cada vez que el agente pierde una vida.  
+  - Objetivo: desalentar comportamientos arriesgados que lleven a muertes frecuentes.
+
+- **Movimiento de la pelota**:
+  - Si la pelota se desplaza hacia abajo (se acerca a la pala): `+0.1`.  
+  - Si la pelota se aleja (se mueve hacia arriba): `–0.05`.  
+  - Objetivo: incentivar al agente a “prestar atención” a momentos en que la pelota se acerca, donde la acción de la pala es crítica.
+
+- **Movimiento de la pala respecto a la pelota**:
+  - Cuando la pelota se mueve hacia abajo, si la pala se acerca horizontalmente a la posición de la pelota (la distancia actual es menor que la anterior): `+0.05`.  
+  - Objetivo: recompensar directamente los movimientos que alinean la pala con la pelota.
+
+La combinación de estos términos busca que el agente no solo reciba recompensa al romper ladrillos, sino que también aprenda a posicionarse correctamente y evitar perder vidas.
+
+#### Hiperparámetros
+
+El agente Q-Learning se inicializó con los siguientes valores:
+
+- **alpha (tasa de aprendizaje)**: 0.3  
+- **gamma (factor de descuento)**: 0.99  
+- **epsilon inicial (exploración)**: 0.3  
+- **epsilon_decay**: 0.9995  
+- **epsilon_min**: 0.01  
+- **alpha_decay**: 1.0  
+- **alpha_min**: 0.05  
+- **grid_size**: 10 píxeles
+
+Al final de cada episodio se aplican `decay_epsilon()` y `decay_alpha()` para ir reduciendo gradualmente la exploración y la magnitud de las actualizaciones, respetando los mínimos definidos.
+
+#### Barrido de hiperparámetros
+
+Para seleccionar adecuadamente los valores de **α (alpha)** y **ε (epsilon)** se realizaron barridos sistemáticos:
+
+- **Barrido de alpha**:  
+  Se probaron distintos valores de `alpha` (`0.1, 0.3, 0.5, 0.7, 0.9, 1.0`) ejecutando varios episodios de entrenamiento cortos por cada valor. Para cada configuración se calculó la recompensa media y su desviación estándar, generando gráficos de `recompensa media vs alpha`.
+
+- **Barrido de epsilon inicial**:  
+  De forma análoga, se variaron valores iniciales de `epsilon` (`0.1, 0.2, 0.3, 0.5, 0.7, 1.0`) manteniendo fijo el resto de hiperparámetros. Esto permitió encontrar un compromiso razonable entre exploración inicial y convergencia.
+
+A partir de estos experimentos se seleccionó una configuración intermedia (`alpha ≈ 0.3`, `epsilon ≈ 0.3`) que ofreció un buen balance entre estabilidad y capacidad de mejora sin requerir tiempos de entrenamiento excesivos.
+
+#### Proceso de entrenamiento
+
+El entrenamiento principal se realizó sobre el entorno `ALE/Breakout-v5`, sin renderizado para acelerar la interacción. Para cada episodio:
+
+1. Se resetea el entorno y el estado interno del agente (`reset_episode`).
+2. En cada paso:
+   - El agente selecciona una acción con `get_action`, combinando exploración ε-greedy y la Q-table.
+   - Se ejecuta `env.step(action)` y se calcula la **recompensa moldeada**.
+   - Se actualizan los valores Q mediante la regla estándar de Q-Learning:
+     \[
+     Q(s,a) \leftarrow Q(s,a) + \alpha \left( r + \gamma \max_{a'} Q(s',a') - Q(s,a) \right)
+     \]
+3. Al finalizar el episodio se actualizan `epsilon` y `alpha` y, cada cierto número de episodios, se guarda la Q-table en disco (`q_table.pkl`) para continuar el entrenamiento en futuras ejecuciones.
+
+Esta estrategia permitió entrenar un agente tabular capaz de coordinar la posición de la pala con la trayectoria de la pelota utilizando únicamente una representación discreta del estado y un esquema de recompensas cuidadosamente diseñado.
