@@ -46,3 +46,53 @@
    ```bash
    python metrics/collect_metrics.py --agents Random DQN --episodes 5 --render
    ```
+
+5. Visualizar Métricas en TensorBoard
+
+   Para ver las métricas de entrenamiento del agente DQN (loss, reward promedio, etc.):
+
+   ```bash
+   python metrics/view_tensorboard.py
+   ```
+
+   Esto abrirá automáticamente una ventana del navegador con TensorBoard.
+
+6. Generación de Gráficos de Métricas
+
+   Puedes generar gráficos comparativos (boxplots) de las métricas recolectadas:
+
+   ```bash
+   python metrics/graphs.py
+   ```
+
+   Esto generará los siguientes gráficos en la carpeta `metrics/plots/`:
+   - `total_reward_boxplot.png`
+   - `steps_boxplot.png`
+   - `brick_hits_boxplot.png`
+
+   **Colores de los Agentes:**
+   - Random: Gris
+   - FollowBall: Amarillo
+   - QLearning: Verde
+   - DQN: Rojo
+
+7. Exportar Gráficos de TensorBoard
+
+   Si deseas guardar los gráficos de TensorBoard como imágenes (PNG) sin usar el navegador:
+
+   ```bash
+   python metrics/export_tensorboard.py
+   ```
+
+   Los gráficos se guardarán en `metrics/plots/tensorboard/`.
+
+8. Grabar Videos de las Partidas
+
+   Puedes grabar un video (GIF) de una partida completa para cada agente:
+
+   ```bash
+   python metrics/record_videos.py
+   ```
+
+   Los videos se guardarán en `metrics/videos/` como archivos `.gif`.
+

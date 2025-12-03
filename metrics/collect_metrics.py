@@ -21,7 +21,14 @@ def create_env(agent_name, render_mode=None):
     if agent_name == "DQN":
         # SB3 DQN uses a vectorized environment with frame stacking
         # We use n_envs=1 for evaluation
-        env = make_atari_env("BreakoutNoFrameskip-v4", n_envs=1, seed=42)
+        # Disable terminal_on_life_loss to allow full game evaluation
+        # Disable clip_reward to see actual game score
+        env = make_atari_env(
+            "BreakoutNoFrameskip-v4", 
+            n_envs=1, 
+            seed=42, 
+            wrapper_kwargs={"terminal_on_life_loss": False, "clip_reward": False}
+        )
         env = VecFrameStack(env, n_stack=4)
         # Note: render_mode handling for VecEnv is different, usually done via env.render() call explicitly
         return env
@@ -82,12 +89,30 @@ def run_episode(env, agent, agent_name, render=False):
     truncated = False
     done = False
 
+    # For SB3 VecEnv, lives might be in info
+    # We need to handle the initial state
+    if agent_name == "DQN":
+        # VecEnv reset returns just obs. We need to step or assume default lives.
+        # Since we just reset, lives should be 5.
+        lives = 5
+    else:
+        lives = info.get("lives", 5)
+        
+    prev_lives = lives
+    force_fire = False
+
     while not done:
         # Determine action based on agent type
         if agent_name == "DQN":
             # SB3 predict returns (action, state)
             # deterministic=True is usually better for evaluation
             action, _ = agent.predict(obs, deterministic=True)
+            
+            # Force Fire if life lost (and not game over) to restart
+            if force_fire:
+                action = np.array([1]) # Fire action is usually 1 in Breakout
+                force_fire = False
+            
         elif isinstance(agent, QLearningAgent):
             action = agent.get_action(obs, training=False)
         else:  # RandomAgent, FollowBallAgent
@@ -114,6 +139,10 @@ def run_episode(env, agent, agent_name, render=False):
             else:
                 done = terminated
             
+            if lives < prev_lives and lives > 0:
+                force_fire = True
+            
+            prev_lives = lives
             truncated = False # VecEnv handles auto-reset
 
             if render:
