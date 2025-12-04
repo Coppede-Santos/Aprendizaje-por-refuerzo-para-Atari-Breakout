@@ -24,23 +24,41 @@ def extract_and_plot(log_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     # Plot each scalar
+    # Define titles and labels mapping
+    plot_config = {
+        "rollout/ep_rew_mean": {"title": "Recompensa Media por Episodio (Rollout)", "ylabel": "Recompensa Media"},
+        "rollout/ep_len_mean": {"title": "Duración Media del Episodio (Rollout)", "ylabel": "Pasos"},
+        "eval/mean_reward": {"title": "Recompensa Media (Evaluación)", "ylabel": "Recompensa Media"},
+        "train/loss": {"title": "Pérdida de Entrenamiento (Loss)", "ylabel": "Loss"},
+        "train/learning_rate": {"title": "Tasa de Aprendizaje", "ylabel": "Learning Rate"},
+        "rollout/exploration_rate": {"title": "Tasa de Exploración (Epsilon)", "ylabel": "Epsilon"},
+        "time/fps": {"title": "Cuadros por Segundo (FPS)", "ylabel": "FPS"}
+    }
+
+    # Plot each scalar
     for tag in tags:
+        if tag not in plot_config:
+            continue
+            
         data = ea.Scalars(tag)
         steps = [x.step for x in data]
         values = [x.value for x in data]
 
+        config = plot_config[tag]
+        
         plt.figure(figsize=(10, 6))
-        plt.plot(steps, values)
-        plt.title(tag)
-        plt.xlabel("Steps")
-        plt.ylabel("Value")
-        plt.grid(True)
-
+        plt.plot(steps, values, linewidth=2)
+        plt.title(config["title"], fontsize=14)
+        plt.xlabel("Pasos de Entrenamiento", fontsize=12)
+        plt.ylabel(config["ylabel"], fontsize=12)
+        plt.grid(True, alpha=0.3)
+        
         # Sanitize filename
         filename = tag.replace("/", "_") + ".png"
         output_path = os.path.join(output_dir, filename)
         
-        plt.savefig(output_path)
+        plt.tight_layout()
+        plt.savefig(output_path, dpi=300)
         plt.close()
         print(f"Saved {output_path}")
 
