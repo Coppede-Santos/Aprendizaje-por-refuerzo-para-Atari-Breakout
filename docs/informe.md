@@ -1,6 +1,6 @@
 <p style="text-align:center; font-size:20px;">
 <strong>LCC - Facultad de Ingeniería - UNCUyo</strong><br>
-<strong>Inteligencia Artificial 1</strong> &nbsp;&nbsp;&nbsp; Prof. Carlos A. Catania (Harpo)
+<strong>Inteligencia Artificial 1</strong> &nbsp;&nbsp;&nbsp; Prof. Carlos A. Catania (Harpo) - Prof. Tatiana Parlanti
 </p>
 
 ---
@@ -35,6 +35,63 @@ Una **bola** desciende y el jugador debe golpearla con la raqueta, haciendo que 
 El presente proyecto busca **entrenar un agente mediante aprendizaje por refuerzo**, evaluando mediante métricas específicas.
 
 ## Marco Teórico
+
+### Aprendizaje por refuerzo
+El **aprendizaje por refuerzo** es el proceso mediante el cual un agente aprende a comportarse en un entorno observando las consecuencias de sus acciones, sin recibir instrucciones explícitas sobre cuál acción es correcta. El agente debe descubrir una política que maximice la utilidad esperada, guiado únicamente por la retroalimentación en forma de recompensas obtenidas al ejecutar acciones. El aprendizaje ocurre durante la interacción con el entorno y no mediante ejemplos preetiquetados, lo que hace del RL un enfoque adecuado para tareas secuenciales donde deben considerarse tanto recompensas inmediatas como futuras (Russell & Norvig, 2021).
+#### Passive Reinforcement Learning
+
+En el enfoque **pasivo**, el agente no decide qué acción tomar: recibe una **política fija** π. Su tarea consiste en **evaluar la calidad de esa política**, es decir, aprender las utilidades Uπ​(s) de los estados bajo dicha política.
+
+El agente:
+
+- Ejecuta siempre la acción indicada por la política.
+- Observa las transiciones y recompensas.
+- Aprende utilidades mediante métodos como aprendizaje de modelo, aprendizaje directo o Temporal Difference.
+- No modifica la política, solo la **evalúa**.
+
+Este enfoque se centra en la estimación del valor de los estados y no en la mejora del comportamiento del agente.
+
+#### Active Reinforcement Learning
+
+En el enfoque **activo**, el agente debe **aprender la política** porque no se le proporciona una. Su objetivo es descubrir cuáles acciones producen mejores resultados a largo plazo.
+
+El agente debe:
+
+- **Explorar** acciones para obtener información nueva.
+- **Explotar** el conocimiento actual para maximizar la recompensa.
+- Equilibrar ambos procesos para evitar caer en políticas subóptimas.
+- Aprender simultáneamente un modelo del entorno (si es necesario) y la política óptima.
+
+### Q-Learning
+El algoritmo se centra en aprender la **función de acción-valor** \( Q(s, a) \), que estima la utilidad esperada de realizar una acción \( a \) en un estado \( s \) y continuar luego siguiendo la política óptima. Debido a que actualiza los valores utilizando el **máximo** de las acciones disponibles en el próximo estado, Q-Learning es un método *off-policy*: el agente puede explorar acciones arbitrarias mientras aprende la política óptima.
+
+La regla de actualización clásica es:
+
+$$
+Q(s, a) \leftarrow Q(s, a) + \alpha (r + \gamma \max_{a'} Q(s', a') - Q(s, a))
+$$
+
+donde:
+
+- $\alpha$ es la tasa de aprendizaje  
+- r es la recompensa inmediata  
+- $\gamma$ es el factor de descuento  
+- s' es el estado resultante de ejecutar la acción \( a \)  
+- $\max_{a'}$ Q(s',a')$ representa el valor estimado de la mejor acción futura  
+
+#### Justificación de elección
+
+Q-Learning, aun con su bajo rendimiento en entornos de alta complejidad como Breakout, resulta valioso dentro del proyecto porque permite analizar las limitaciones de los métodos tabulares frente a espacios de estados grandes. Su incorporación ofrece una base clara desde la cual entender cómo la falta de generalización afecta la política aprendida y por qué la aproximación con funciones es necesaria. Además, funciona como un punto de contraste útil para evaluar el salto conceptual y práctico que introducen algoritmos más modernos como DQN.
+
+### DQN
+
+DQN extiende el enfoque de Q-Learning utilizando una red neuronal convolucional como aproximador de la función $Q(s,a)$, lo que permite operar directamente sobre secuencias de imágenes y manejar espacios de estados de gran dimensionalidad como los que presenta Breakout[4]. En este esquema, los frames apilados del entorno conforman la entrada de la red, que aprende a estimar los valores Q para todas las acciones posibles y, a través de ello, a capturar tanto la dinámica espacial como la temporal del juego. Esta aproximación permite superar las limitaciones de los métodos tabulares, incapaces de generalizar entre millones de configuraciones visuales.
+
+Para estabilizar el aprendizaje, DQN incorpora mecanismos fundamentales que resultan esenciales en entornos Atari. El experience replay almacena transiciones en un búfer grande y entrena a la red usando mini-lotes muestreados aleatoriamente, reduciendo la correlación entre pasos consecutivos y mejorando el uso de datos. A su vez, la target network —una copia de la red principal que se actualiza con menor frecuencia— proporciona objetivos más estables al calcular el valor de actualización, evitando oscilaciones numéricas y divergencias durante el entrenamiento prolongado. Estas estrategias combinadas permiten que el agente aprenda políticas efectivas incluso en escenarios de alta complejidad visual.
+
+### Justificación de elección
+
+DQN fue seleccionado porque constituye el enfoque estándar para aprender desde observaciones visuales en Atari y representa un avance fundamental respecto del Q-Learning tabular, que no puede manejar espacios de estados tan amplios. Su capacidad para extraer características relevantes directamente de imágenes y su estabilidad derivada de técnicas como replay buffer y target networks lo convierten en la elección adecuada para un entorno como Breakout. Además, su inclusión en el proyecto permite contrastar de manera clara cómo los métodos de deep reinforcement learning superan las limitaciones observadas previamente con el agente tabular, tanto en términos de generalización como de rendimiento.
 
 ## Diseño Experimental
 
@@ -87,7 +144,7 @@ Antes de aplicar algoritmos de aprendizaje, se implementaron dos agentes básico
 
 ### 1. Agente Aleatorio (Random)
 
-![Random](../docs/assets/random.gif)
+![Random](../docs/assets/Random.gif)
 
 Este agente selecciona una acción al azar del espacio de acciones disponible en cada paso de tiempo ($A = \{NOOP, FIRE, RIGHT, LEFT\}$).
 - **Propósito**: Establecer el límite inferior de desempeño. Cualquier agente "inteligente" debería superar a este comportamiento.
@@ -95,7 +152,7 @@ Este agente selecciona una acción al azar del espacio de acciones disponible en
 
 ### 2. Agente Heurístico (FollowBall)
 
-![FollowBall](../docs/assets/followball.gif)
+![FollowBall](../docs/assets/FollowBall.gif)
 
 Este agente utiliza técnicas de visión por computadora clásica (procesamiento de imágenes) para rastrear la pelota y mover la paleta en consecuencia.
 - **Lógica**:
@@ -109,7 +166,7 @@ Este agente utiliza técnicas de visión por computadora clásica (procesamiento
 
 ### Q-Learning
 
-![Q-Learning](../docs/assets/Qlearning.gif)
+![Q-Learning](../docs/assets/QLearning.gif)
 
 
 Para el agente tabular de Q-Learning se diseñó una estrategia específica orientada a explotar información geométrica del entorno (posición de la pelota y de la pala) sin recurrir a redes neuronales. El objetivo principal fue aprender una política que mantenga la pelota en juego y logre impactar la mayor cantidad posible de ladrillos, utilizando una representación de estado discreta y recompensas moldeadas (*reward shaping*).
@@ -155,9 +212,9 @@ La combinación de estos términos busca que el agente no solo reciba recompensa
 
 El agente Q-Learning se inicializó con los siguientes valores:
 
-- **alpha (tasa de aprendizaje)**: 0.3  
+- **alpha (tasa de aprendizaje)**: 0.5  
 - **gamma (factor de descuento)**: 0.99  
-- **epsilon inicial (exploración)**: 0.3  
+- **epsilon inicial (exploración)**: 1.0  
 - **epsilon_decay**: 0.9995  
 - **epsilon_min**: 0.01  
 - **alpha_decay**: 1.0  
@@ -183,11 +240,35 @@ El entrenamiento principal se realizó sobre el entorno `ALE/Breakout-v5`, sin r
      \]
 3. Al finalizar el episodio se actualizan `epsilon` y `alpha` y, cada cierto número de episodios, se guarda la Q-table en disco (`q_table.pkl`) para continuar el entrenamiento en futuras ejecuciones.
 
-Esta estrategia permitió entrenar un agente tabular capaz de coordinar la posición de la pala con la trayectoria de la pelota utilizando únicamente una representación discreta del estado y un esquema de recompensas cuidadosamente diseñado.
+![Barrido_Alpha](../agents/qLearning/alpha_sweep.png)
+El barrido de alpha muestra que valores intermedios (especialmente alrededor de 0.3) producen una recompensa media ligeramente superior y más estable.
+
+![Barrido_Epsilon](../agents/qLearning/epsilon_sweep.png)
+En el caso de epsilon, se observa que valores moderados como 0.3 tienden a maximizar la recompensa media por episodio.
+
+A partir del análisis de la recompensa media por episodio obtenida bajo distintos valores de alpha decay y epsilon decay, fue posible identificar cuáles combinaciones de hiperparámetros ofrecían el mejor rendimiento global del agente. Con base en estos resultados, se determinó que los valores más adecuados para nuestro agente Q-Learning son los siguientes:
+
+- **alpha (tasa de aprendizaje)**: 0.3  
+- **gamma (factor de descuento)**: 0.99  
+- **epsilon inicial (exploración)**: 0.3  
+- **epsilon_decay**: 0.9995  
+- **epsilon_min**: 0.01  
+- **alpha_decay**: 1.0  
+- **alpha_min**: 0.05  
+- **grid_size**: 10 píxeles
+
+
+A pesar del proceso de optimización de hiperparámetros, el rendimiento final del agente Q-Learning se mantuvo por debajo del nivel alcanzado por un agente aleatorio. Este comportamiento puede explicarse por dos factores principales. 
+
+En primer lugar, Q-Learning tabular no es un algoritmo adecuado para ambientes con espacios de estados grandes, continuos o parcialmente observables, como Breakout. Según Sutton & Barto (2018) [2], los métodos tabulares solo convergen de forma eficiente cuando el espacio de estados es manejable y la dinámica del entorno puede capturarse mediante discretizaciones relativamente simples. En Breakout, incluso con una discretización agresiva, la cantidad de configuraciones posibles (posiciones relativas de pelota, pala, velocidades y transiciones rápidas) supera ampliamente la capacidad de generalización del enfoque tabular.
+
+En segundo lugar, identificamos limitaciones en la representación del estado utilizada. Aunque la literatura sugiere mantener estados simples para agentes tabulares, la extracción de información geométrica mediante color-thresholding y discretización no captura aspectos críticos del entorno, como el ángulo exacto de rebote, la presencia del techo, la cercanía de ladrillos o los cambios de velocidad de la pelota. Esto provoca que muchos estados distintos del entorno real se proyecten sobre la misma clave discreta, generando colisiones en la Q-table y dificultando el aprendizaje de una política consistente.
+
+Una alternativa mencionada en trabajos previos, como el enfoque presentado por Bellemare et al. (2013) [3] para la plataforma Arcade Learning Environment (ALE), consiste en derivar el estado directamente desde la RAM interna de la Atari, que contiene información precisa sobre posiciones de la pelota y la pala, velocidad, vida restante y estructura interna del nivel. Esta representación, al ser más estructurada y menos ruidosa que el procesamiento de imágenes, podría haber permitido un aprendizaje tabular más estable y menos dependiente de la visión basada en píxeles.
 
 ### DQN
 
-![DQN](../docs/assets/dqn.gif)
+![DQN](../docs/assets/DQN.gif)
 
 Para entrenar el agente DQN se realizaron diversas pruebas preliminares con el fin de establecer una configuración estable y eficiente dentro de las limitaciones de la plataforma Kaggle. Estas pruebas permitieron ajustar tanto los hiperparámetros como la estructura del entorno de entrenamiento hasta obtener los resultados finales utilizados para las 10 millones de iteraciones.
 
@@ -303,3 +384,9 @@ El agente **DQN** también domina en duración, manteniendo la pelota viva por m
 4.  **Infraestructura**: El uso de **Kaggle** para el entrenamiento de DQN fue indispensable, permitiendo iteraciones rápidas gracias a la aceleración por GPU.
 
 Este proyecto evidencia cómo el aprendizaje por refuerzo profundo (Deep RL) ha revolucionado la capacidad de los agentes artificiales para dominar tareas de control visual complejas, donde la programación tradicional o los métodos tabulares clásicos se quedan cortos.
+
+## Bibliografía
+1. Russell, S., & Norvig, P. (2021). *Artificial Intelligence: A Modern Approach* (4th ed.). Pearson.
+2. Sutton, R. S., & Barto, A. G. (2018). *Reinforcement Learning: An Introduction* (2nd ed.). MIT Press. Capítulo 6.  
+3. Bellemare, M. G., Naddaf, Y., Veness, J., & Bowling, M. (2013). The Arcade Learning Environment: An evaluation platform for general agents. Journal of Artificial Intelligence Research, 47, 253–279.
+4. Mnih, V. et al. (2015). Human-level control through deep reinforcement learning. Nature, 518(7540), 529–533.
