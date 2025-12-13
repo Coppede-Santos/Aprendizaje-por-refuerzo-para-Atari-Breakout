@@ -36,6 +36,39 @@ El presente proyecto busca **entrenar un agente mediante aprendizaje por refuerz
 
 ## Marco Teórico
 
+### Aprendizaje por Refuerzo
+
+El aprendizaje por refuerzo es un enfoque en el que un agente aprende a tomar decisiones en un entorno para maximizar una recompensa acumulada. En el contexto de Atari Breakout, el agente debe aprender a controlar la raqueta para destruir los ladrillos y obtener la mayor recompensa posible.
+
+### Random
+
+El agente Random selecciona sus acciones de forma aleatoria, sin ningún criterio basado en el estado del entorno. Este tipo de agente es útil como baseline de muy bajo desempeño para evaluar qué tan difícil es la tarea y qué tan bien se desempeñan agentes más sofisticados. Contrastar con este baseline permite medir el valor añadido de algoritmos como DQN o heurísticos como FollowBall.
+
+### FollowBall
+
+El agente FollowBall no es un algoritmo de aprendizaje por refuerzo, sino una estrategia heurística diseñada para servir como referencia simple. En lugar de entrenar parámetros mediante experiencia acumulada, este agente utiliza reglas fijas que intentan posicionar la pala bajo la pelota en todo momento, con el objetivo de minimizar pérdidas y maximizar interacciones útiles. Aunque no aprende, proporciona una línea base determinista contra la cual comparar agentes aleatorios y entrenados. (Concepto heurístico común en trabajos de RL aplicado a Breakout, usado como referencia simple.)
+
+### Q-Learning
+
+Q-Learning es un algoritmo clásico de aprendizaje por refuerzo off-policy que busca aprender una función de valor 𝑄(𝑠,𝑎) que representa el valor esperado de tomar una acción 𝑎 en un estado 𝑠, y seguir una política óptima a partir de ese punto. Es independiente del modelo del entorno y se basa en la Ecuación de Bellman para actualizar los valores de Q a partir de experiencias de interacción. A medida que el agente acumula transiciones (𝑠,𝑎,𝑟,𝑠′), actualiza la estimación de 𝑄(𝑠,𝑎) de forma incremental hasta aproximar la función de valor óptima. [1]
+
+Este método es útil en espacios de estado pequeños o moderados, pero no escala bien cuando los estados son de alta dimensión (por ejemplo, imágenes), ya que requeriría una tabla Q extremadamente grande. Esta limitación motivó variantes modernas como las Deep Q-Networks
+### DQN
+
+El algoritmo Deep Q-Network (DQN) es una extensión de Q-Learning que emplea una red neuronal profunda para aproximar la función de valor 𝑄(𝑠,𝑎) en espacios de estado de alta dimensión, como los generados por observaciones visuales en juegos Atari. Este enfoque fue introducido por Mnih et al. (DeepMind)[2] y demostró por primera vez que era posible aprender políticas competitivas directamente desde píxeles crudos y recompensa escalar en múltiples juegos Atari, incluyendo Breakout, sin ingeniería manual de características.
+
+La arquitectura DQN incorpora varias innovaciones clave para estabilizar el entrenamiento:
+
+Experience Replay: una memoria de experiencias donde se almacenan transiciones 
+(𝑠,𝑎,𝑟,𝑠′). Durante el entrenamiento, se muestrean lotes aleatorios de esta memoria para romper correlaciones entre muestras consecutivas y mejorar la eficiencia de aprendizaje. 
+
+Target Network: una copia de la red principal que se actualiza periódicamente para calcular valores objetivo estables, reduciendo la inestabilidad de las actualizaciones.
+
+Aproximación con Redes Convolucionales: en entornos con entradas visuales, se utilizan capas convolucionales para extraer características espaciales relevantes de imágenes o frames. [3]
+
+
+
+
 ## Diseño Experimental
 
 ### Métricas Principales
@@ -105,7 +138,7 @@ Este agente utiliza técnicas de visión por computadora clásica (procesamiento
   4. Incluye una lógica de "disparo automático" si la pelota no se detecta por varios frames (indicando que se perdió una vida o el juego está en espera).
 - **Limitaciones**: Es reactivo y tiene un retraso inherente al movimiento. No predice rebotes ni planifica a largo plazo, pero es muy efectivo para mantener la pelota en juego en niveles bajos.
 
-## Estrategia de entrenamiento
+## Agentes de Inteligencia Artificial
 
 ### Q-Learning
 
@@ -189,11 +222,14 @@ Esta estrategia permitió entrenar un agente tabular capaz de coordinar la posic
 
 ![DQN](../docs/assets/dqn.gif)
 
-Para entrenar el agente DQN se realizaron diversas pruebas preliminares con el fin de establecer una configuración estable y eficiente dentro de las limitaciones de la plataforma Kaggle. Estas pruebas permitieron ajustar tanto los hiperparámetros como la estructura del entorno de entrenamiento hasta obtener los resultados finales utilizados para las 10 millones de iteraciones.
+El uso de un agente Deep Q-Network (DQN) para aprender a jugar juegos Atari fue introducido por Volodymyr Mnih et al. en el trabajo “Playing Atari with Deep Reinforcement Learning” publicado por DeepMind, donde se demostró que un agente puede aprender políticas competitivas directamente desde inputs visuales de píxeles utilizando aprendizaje por refuerzo profundo. En este enfoque, una red neuronal profunda estima los valores de acción Q(s,a) y permite al agente seleccionar acciones que maximicen la recompensa futura acumulada a lo largo del tiempo. 
+[2]
 
-El objetivo principal fue maximizar la cantidad de ladrillos destruidos y la supervivencia del agente, priorizando comportamientos que aumentaran la recompensa total y evitaran pérdidas tempranas de vidas. Para ello se utilizó el esquema estándar de recompensas del entorno Breakout, sin modificaciones adicionales, dejando que el agente aprendiera las dinámicas óptimas únicamente a partir de los puntos otorgados por el juego original.
+Para entrenar el agente DQN en este proyecto se realizaron diversas pruebas preliminares orientadas a encontrar una configuración estable y eficiente dentro de las limitaciones de la plataforma Kaggle. Estas pruebas permitieron ajustar hiperparámetros (como la tasa de aprendizaje, el tamaño del replay buffer, el decaimiento de exploración ε, y la frecuencia de actualización de la red objetivo) y definir la estructura del entrenamiento que se utilizó finalmente durante las 10 millones de iteraciones de entrenamiento.
 
-Con respecto al diseño del entorno, se empleó el preprocesamiento clásico para Atari: convertir las observaciones en escala de grises, reescalarlas a 84×84 píxeles y apilar de a 4 frames consecutivos. Este procedimiento permite que la red convolucional capture información temporal, como velocidad y dirección de la pelota.
+El objetivo principal del entrenamiento fue maximizar el número de ladrillos destruidos y la supervivencia del agente, priorizando comportamientos que aumentaran la recompensa total y evitaran pérdidas tempranas de vidas. Para mantener la integridad del aprendizaje, se utilizó el esquema de recompensas estándar provisto por el entorno Breakout sin modificaciones adicionales, de modo que el agente aprendiera las dinámicas óptimas únicamente a partir de las recompensas originales del juego.
+
+La configuración del entorno siguió las prácticas comunes en trabajos de RL profundo sobre Atari. En particular, las observaciones se preprocesaron convirtiendo los frames RGB originales a escala de grises y reescalándolos a 84 × 84 píxeles, reduciendo así la dimensionalidad de la entrada y eliminando información de color redundante. Para capturar información temporal y resolver parcialmente la no-Markovianidad de un solo frame, se apilaron 4 frames consecutivos como entrada al modelo, lo que permite a la red convolucional inferir velocidad y movimiento de objetos en el juego. Este tipo de preprocesamiento es estándar en implementaciones de DQN para Atari y ha demostrado ser efectivo en términos de eficiencia y calidad de aprendizaje.
 
 Los hiperparámetros definitivos utilizados durante el entrenamiento fueron:
 
@@ -210,7 +246,7 @@ Los hiperparámetros definitivos utilizados durante el entrenamiento fueron:
 - **n_envs**: 8 entornos paralelos  
 - **steps_training**: 10 millones de pasos
 
-Estuvieron basados en las recomendaciones brindadas por la documentación.
+Para la elección de hiperparametros nos basamos fuertemente en la documentación oficial de Stable Baselines3[4] y en la experiencia de otros investigadores en el campo.[5]
 
 Además, para garantizar estabilidad durante el entrenamiento, se utilizaron mecanismos de evaluación periódica y checkpoints automáticos.  
 - Cada **50 000** pasos se evaluó el agente en 10 episodios.  
@@ -234,12 +270,21 @@ La gráfica muestra el crecimiento progresivo de la recompensa media obtenida du
 ##### Recompensa Media (Evaluación)
 ![Recompensa Media en Evaluación](../metrics/plots/tensorboard/eval_mean_reward.png)
 
-Las evaluaciones periódicas (sin ruido de exploración) confirman la tendencia. El agente alcanza un rendimiento pico cercano a los 280-300 puntos, lo que corresponde a limpiar la primera y segunda capa de ladrillos y golpear las capas superiores más valiosas.
+Las evaluaciones periódicas realizadas con ε cercano a 0 (modo determinístico) confirman y complementan la tendencia observada durante el entrenamiento. En estas pruebas sin ruido de exploración:
+
+El agente alcanza un rendimiento pico cercano a los 280–300 puntos, lo cual es coherente con la capacidad de limpiar varias filas de ladrillos antes de perder vidas.
+
+La ausencia de exploración forzada permite observar el rendimiento real de la política aprendida sin interferencia de aleatoriedad activa.
 
 ##### Duración Media del Episodio
 ![Duración Media](../metrics/plots/tensorboard/rollout_ep_len_mean.png)
 
-La duración de los episodios aumenta correlacionadamente con la recompensa. Al inicio, el agente pierde rápidamente. A medida que aprende a no dejar caer la pelota, los episodios se extienden hasta superar los 1000 pasos en promedio.
+La duración promedio de los episodios crece de manera correlacionada con la recompensa:
+
+Al inicio, el agente pierde la partida rápidamente, reflejando una política poco informada.
+
+A medida que aprende a mantener la pelota en juego y tomar mejores decisiones, la duración de los episodios se extiende y supera los 1000 pasos en promedio, lo que indica mayor supervivencia antes de terminar cada juego.
+Este aumento en la duración es un buen indicativo de que la política no solo maximiza recompensas, sino también evita errores tempranos..
 
 ##### Tasa de Exploración (Epsilon)
 ![Epsilon Decay](../metrics/plots/tensorboard/rollout_exploration_rate.png)
@@ -250,10 +295,14 @@ La tasa de exploración decrece linealmente desde 1.0 hasta 0.01 durante el prim
 ##### Pérdida (Loss)
 ![Pérdida de Entrenamiento](../metrics/plots/tensorboard/train_loss.png)
 
-La pérdida disminuye rápidamente al inicio y luego oscila, lo cual es típico en DQN debido a la inestabilidad inherente del aprendizaje con target network y replay buffer, pero la tendencia general de mejora en recompensa valida el entrenamiento.
 
+##### Pérdida (Loss) - Primeros 3M
+![Pérdida de Entrenamiento](../metrics/plots/tensorboard/train_loss_first_3m.png)
 
+##### Pérdida (Loss) - Últimos 3M
+![Pérdida de Entrenamiento](../metrics/plots/tensorboard/train_loss_last_3m.png)
 
+Como se pueda observar en las gráficas, hay una gran variación en la pérdida de entrenamiento, lo que indica que el agente está aprendiendo de manera instable, parcialmente por la inestabilidad inherente del aprendizaje con target network y replay buffer, pero la tendencia general de mejora en recompensa valida el entrenamiento. experiencias de otros investigadores también han reportado esta inestabilidad en DQN, lo que sugiere que es un problema común en el aprendizaje por refuerzo. [6]
 
 
 
@@ -266,12 +315,12 @@ Se evaluaron los cuatro agentes durante 100 episodios cada uno para garantizar s
 
 | Agente | Recompensa Media | Desviación Estándar | Golpes a Ladrillos (Promedio) |
 | :--- | :---: | :---: | :---: |
-| **DQN** | **~245.0** | Baja | **~70** |
-| **FollowBall** | ~16.5 | Media | ~13 |
-| **Random** | ~1.3 | Baja | ~1 |
-| **Q-Learning** | ~0.2 | Baja | ~0 |
+| **DQN** | **~245.0** | 38.547654 | **~70** |
+| **FollowBall** | ~16.5 | 6.022475 | ~13 |
+| **Random** | ~1.3 | 1.241171 | ~1 |
+| **Q-Learning** | ~0.2 | 0.471405 | ~0 |
 
-> **Nota**: Los valores son aproximados basados en los datos recolectados en `metrics/*.csv`.
+
 
 ### Análisis Gráfico
 
@@ -303,3 +352,13 @@ El agente **DQN** también domina en duración, manteniendo la pelota viva por m
 4.  **Infraestructura**: El uso de **Kaggle** para el entrenamiento de DQN fue indispensable, permitiendo iteraciones rápidas gracias a la aceleración por GPU.
 
 Este proyecto evidencia cómo el aprendizaje por refuerzo profundo (Deep RL) ha revolucionado la capacidad de los agentes artificiales para dominar tareas de control visual complejas, donde la programación tradicional o los métodos tabulares clásicos se quedan cortos.
+
+
+## Referencias
+
+- [1] https://es.wikipedia.org/wiki/Q-learning
+- [2] https://arxiv.org/pdf/1312.5602
+- [3] https://www.emergentmind.com/papers/1312.5602 
+- [4] https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html
+- [5] https://becominghuman.ai/lets-build-an-atari-ai-part-1-dqn-df57e8ff3b26
+- [6] https://ar5iv.labs.arxiv.org/html/2106.15419

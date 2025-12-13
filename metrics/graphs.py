@@ -78,6 +78,21 @@ def main():
         
         # Output directory for plots
         output_dir = os.path.join(script_dir, "plots")
+        
+        # Print statistics
+        print("\n" + "="*40)
+        print("METRIC STATISTICS (Mean & Std Dev)")
+        print("="*40)
+        metrics_cols = ["total_reward", "steps", "brick_hits"]
+        # Filter cols that exist
+        metrics_cols = [c for c in metrics_cols if c in df.columns]
+        if metrics_cols:
+            stats = df.groupby("Agent")[metrics_cols].agg(['mean', 'std'])
+            print(stats)
+        else:
+            print("Metrics columns not found.")
+        print("="*40 + "\n")
+        
         plot_metrics(df, output_dir)
     else:
         print("No data found.")
