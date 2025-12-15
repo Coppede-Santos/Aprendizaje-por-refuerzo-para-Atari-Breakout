@@ -245,6 +245,7 @@ A partir del análisis de la recompensa media por episodio obtenida bajo distint
 
 
 #### Entrenamiento
+Se procedió a entrenar al agente durante 10.000 de interacciones con los paramatros especificados anteriormente, y utilizando hardware de computación personal. A continuación se presentan las gráficas que muestran la evolución de diversas métricas registradas durante el entrenamiento:
 
 ![Recompensa Q-Learning](../metrics/plots/qlearning/reward.png)
 
