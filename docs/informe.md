@@ -36,10 +36,8 @@ El presente proyecto busca **entrenar un agente mediante aprendizaje por refuerz
 
 ## Marco Teórico
 
-<<<<<<< HEAD
-### Aprendizaje por Refuerzo
-
-El aprendizaje por refuerzo es un enfoque en el que un agente aprende a tomar decisiones en un entorno para maximizar una recompensa acumulada. En el contexto de Atari Breakout, el agente debe aprender a controlar la raqueta para destruir los ladrillos y obtener la mayor recompensa posible.
+### Aprendizaje por refuerzo
+El **aprendizaje por refuerzo** es el proceso mediante el cual un agente aprende a comportarse en un entorno observando las consecuencias de sus acciones, sin recibir instrucciones explícitas sobre cuál acción es correcta. El agente debe descubrir una política que maximice la utilidad esperada, guiado únicamente por la retroalimentación en forma de recompensas obtenidas al ejecutar acciones. El aprendizaje ocurre durante la interacción con el entorno y no mediante ejemplos preetiquetados, lo que hace del RL un enfoque adecuado para tareas secuenciales donde deben considerarse tanto recompensas inmediatas como futuras (Russell & Norvig, 2021).
 
 ### Random
 
@@ -49,52 +47,6 @@ El agente Random selecciona sus acciones de forma aleatoria, sin ningún criteri
 
 El agente FollowBall no es un algoritmo de aprendizaje por refuerzo, sino una estrategia heurística diseñada para servir como referencia simple. En lugar de entrenar parámetros mediante experiencia acumulada, este agente utiliza reglas fijas que intentan posicionar la pala bajo la pelota en todo momento, con el objetivo de minimizar pérdidas y maximizar interacciones útiles. Aunque no aprende, proporciona una línea base determinista contra la cual comparar agentes aleatorios y entrenados. (Concepto heurístico común en trabajos de RL aplicado a Breakout, usado como referencia simple.)
 
-### Q-Learning
-
-Q-Learning es un algoritmo clásico de aprendizaje por refuerzo off-policy que busca aprender una función de valor 𝑄(𝑠,𝑎) que representa el valor esperado de tomar una acción 𝑎 en un estado 𝑠, y seguir una política óptima a partir de ese punto. Es independiente del modelo del entorno y se basa en la Ecuación de Bellman para actualizar los valores de Q a partir de experiencias de interacción. A medida que el agente acumula transiciones (𝑠,𝑎,𝑟,𝑠′), actualiza la estimación de 𝑄(𝑠,𝑎) de forma incremental hasta aproximar la función de valor óptima. [1]
-
-Este método es útil en espacios de estado pequeños o moderados, pero no escala bien cuando los estados son de alta dimensión (por ejemplo, imágenes), ya que requeriría una tabla Q extremadamente grande. Esta limitación motivó variantes modernas como las Deep Q-Networks
-### DQN
-
-El algoritmo Deep Q-Network (DQN) es una extensión de Q-Learning que emplea una red neuronal profunda para aproximar la función de valor 𝑄(𝑠,𝑎) en espacios de estado de alta dimensión, como los generados por observaciones visuales en juegos Atari. Este enfoque fue introducido por Mnih et al. (DeepMind)[2] y demostró por primera vez que era posible aprender políticas competitivas directamente desde píxeles crudos y recompensa escalar en múltiples juegos Atari, incluyendo Breakout, sin ingeniería manual de características.
-
-La arquitectura DQN incorpora varias innovaciones clave para estabilizar el entrenamiento:
-
-Experience Replay: una memoria de experiencias donde se almacenan transiciones 
-(𝑠,𝑎,𝑟,𝑠′). Durante el entrenamiento, se muestrean lotes aleatorios de esta memoria para romper correlaciones entre muestras consecutivas y mejorar la eficiencia de aprendizaje. 
-
-Target Network: una copia de la red principal que se actualiza periódicamente para calcular valores objetivo estables, reduciendo la inestabilidad de las actualizaciones.
-
-Aproximación con Redes Convolucionales: en entornos con entradas visuales, se utilizan capas convolucionales para extraer características espaciales relevantes de imágenes o frames. [3]
-
-
-
-=======
-### Aprendizaje por refuerzo
-El **aprendizaje por refuerzo** es el proceso mediante el cual un agente aprende a comportarse en un entorno observando las consecuencias de sus acciones, sin recibir instrucciones explícitas sobre cuál acción es correcta. El agente debe descubrir una política que maximice la utilidad esperada, guiado únicamente por la retroalimentación en forma de recompensas obtenidas al ejecutar acciones. El aprendizaje ocurre durante la interacción con el entorno y no mediante ejemplos preetiquetados, lo que hace del RL un enfoque adecuado para tareas secuenciales donde deben considerarse tanto recompensas inmediatas como futuras (Russell & Norvig, 2021).
-#### Passive Reinforcement Learning
-
-En el enfoque **pasivo**, el agente no decide qué acción tomar: recibe una **política fija** π. Su tarea consiste en **evaluar la calidad de esa política**, es decir, aprender las utilidades Uπ​(s) de los estados bajo dicha política.
-
-El agente:
-
-- Ejecuta siempre la acción indicada por la política.
-- Observa las transiciones y recompensas.
-- Aprende utilidades mediante métodos como aprendizaje de modelo, aprendizaje directo o Temporal Difference.
-- No modifica la política, solo la **evalúa**.
-
-Este enfoque se centra en la estimación del valor de los estados y no en la mejora del comportamiento del agente.
-
-#### Active Reinforcement Learning
-
-En el enfoque **activo**, el agente debe **aprender la política** porque no se le proporciona una. Su objetivo es descubrir cuáles acciones producen mejores resultados a largo plazo.
-
-El agente debe:
-
-- **Explorar** acciones para obtener información nueva.
-- **Explotar** el conocimiento actual para maximizar la recompensa.
-- Equilibrar ambos procesos para evitar caer en políticas subóptimas.
-- Aprender simultáneamente un modelo del entorno (si es necesario) y la política óptima.
 
 ### Q-Learning
 El algoritmo se centra en aprender la **función de acción-valor** \( Q(s, a) \), que estima la utilidad esperada de realizar una acción \( a \) en un estado \( s \) y continuar luego siguiendo la política óptima. Debido a que actualiza los valores utilizando el **máximo** de las acciones disponibles en el próximo estado, Q-Learning es un método *off-policy*: el agente puede explorar acciones arbitrarias mientras aprende la política óptima.
@@ -126,7 +78,6 @@ Para estabilizar el aprendizaje, DQN incorpora mecanismos fundamentales que resu
 ### Justificación de elección
 
 DQN fue seleccionado porque constituye el enfoque estándar para aprender desde observaciones visuales en Atari y representa un avance fundamental respecto del Q-Learning tabular, que no puede manejar espacios de estados tan amplios. Su capacidad para extraer características relevantes directamente de imágenes y su estabilidad derivada de técnicas como replay buffer y target networks lo convierten en la elección adecuada para un entorno como Breakout. Además, su inclusión en el proyecto permite contrastar de manera clara cómo los métodos de deep reinforcement learning superan las limitaciones observadas previamente con el agente tabular, tanto en términos de generalización como de rendimiento.
->>>>>>> 29f97c0a3a0da78b88ccf4989baff0ada35d4571
 
 ## Diseño Experimental
 
