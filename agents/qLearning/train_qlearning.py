@@ -48,7 +48,7 @@ def main():
     model_path = "q_table.pkl"
     agent.load(model_path)
 
-    episodes = 100000
+    episodes = 10000
     save_interval = 10
     
     metrics_data = [] # List to store metrics

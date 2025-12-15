@@ -244,13 +244,23 @@ A partir del análisis de la recompensa media por episodio obtenida bajo distint
 - **grid_size**: 10 píxeles
 
 
+#### Entrenamiento
+
+![Recompensa Q-Learning](../metrics/plots/qlearning/reward.png)
+
+![Pasos Q-Learning](../metrics/plots/qlearning/steps.png)
+
+Como se observa en las figuras, el entrenamiento del agente Q-Learning no muestra una convergencia exitosa hacia una política competente. 
+
+En la gráfica de **Recompensa**, vemos que el valor promedio se mantiene extremadamente bajo (cercano a 0 o 1) a lo largo de los episodios de entrenamiento, sin una tendencia de mejora clara. Similar comportamiento se observa en la gráfica de **Pasos**, donde la duración de los episodios no aumenta significativamente, indicando que el agente pierde rápidamente la vida y no aprende a mantener la pelota en juego.
+
 A pesar del proceso de optimización de hiperparámetros, el rendimiento final del agente Q-Learning se mantuvo por debajo del nivel alcanzado por un agente aleatorio. Este comportamiento puede explicarse por dos factores principales. 
 
-En primer lugar, Q-Learning tabular no es un algoritmo adecuado para ambientes con espacios de estados grandes, continuos o parcialmente observables, como Breakout. Según Sutton & Barto (2018) [2], los métodos tabulares solo convergen de forma eficiente cuando el espacio de estados es manejable y la dinámica del entorno puede capturarse mediante discretizaciones relativamente simples. En Breakout, incluso con una discretización agresiva, la cantidad de configuraciones posibles (posiciones relativas de pelota, pala, velocidades y transiciones rápidas) supera ampliamente la capacidad de generalización del enfoque tabular.
+En primer lugar, Q-Learning tabular no es un algoritmo adecuado para ambientes con espacios de estados grandes, continuos o parcialmente observables, como Breakout. Según Sutton & Barto (2018) [8], los métodos tabulares solo convergen de forma eficiente cuando el espacio de estados es manejable y la dinámica del entorno puede capturarse mediante discretizaciones relativamente simples. En Breakout, incluso con una discretización agresiva, la cantidad de configuraciones posibles (posiciones relativas de pelota, pala, velocidades y transiciones rápidas) supera ampliamente la capacidad de generalización del enfoque tabular.
 
 En segundo lugar, identificamos limitaciones en la representación del estado utilizada. Aunque la literatura sugiere mantener estados simples para agentes tabulares, la extracción de información geométrica mediante color-thresholding y discretización no captura aspectos críticos del entorno, como el ángulo exacto de rebote, la presencia del techo, la cercanía de ladrillos o los cambios de velocidad de la pelota. Esto provoca que muchos estados distintos del entorno real se proyecten sobre la misma clave discreta, generando colisiones en la Q-table y dificultando el aprendizaje de una política consistente.
 
-Una alternativa mencionada en trabajos previos, como el enfoque presentado por Bellemare et al. (2013) [3] para la plataforma Arcade Learning Environment (ALE), consiste en derivar el estado directamente desde la RAM interna de la Atari, que contiene información precisa sobre posiciones de la pelota y la pala, velocidad, vida restante y estructura interna del nivel. Esta representación, al ser más estructurada y menos ruidosa que el procesamiento de imágenes, podría haber permitido un aprendizaje tabular más estable y menos dependiente de la visión basada en píxeles.
+Una alternativa mencionada en trabajos previos, como el enfoque presentado por Bellemare et al. (2013) [7] para la plataforma Arcade Learning Environment (ALE), consiste en derivar el estado directamente desde la RAM interna de la Atari, que contiene información precisa sobre posiciones de la pelota y la pala, velocidad, vida restante y estructura interna del nivel. Esta representación, al ser más estructurada y menos ruidosa que el procesamiento de imágenes, podría haber permitido un aprendizaje tabular más estable y menos dependiente de la visión basada en píxeles.
 
 ### DQN
 
@@ -387,7 +397,6 @@ El agente **DQN** también domina en duración, manteniendo la pelota viva por m
 
 Este proyecto evidencia cómo el aprendizaje por refuerzo profundo (Deep RL) ha revolucionado la capacidad de los agentes artificiales para dominar tareas de control visual complejas, donde la programación tradicional o los métodos tabulares clásicos se quedan cortos.
 
-<<<<<<< HEAD
 
 ## Referencias
 
@@ -397,10 +406,11 @@ Este proyecto evidencia cómo el aprendizaje por refuerzo profundo (Deep RL) ha 
 - [4] https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html
 - [5] https://becominghuman.ai/lets-build-an-atari-ai-part-1-dqn-df57e8ff3b26
 - [6] https://ar5iv.labs.arxiv.org/html/2106.15419
-=======
+- [7] 3. Bellemare, M. G., Naddaf, Y., Veness, J., & Bowling, M. (2013). The Arcade Learning Environment: An evaluation platform for general agents. Journal of Artificial Intelligence Research, 47, 253–279. 
+- [8] 2. Sutton, R. S., & Barto, A. G. (2018). *Reinforcement Learning: An Introduction* (2nd ed.). MIT Press. Capítulo 6. 
+
 ## Bibliografía
 1. Russell, S., & Norvig, P. (2021). *Artificial Intelligence: A Modern Approach* (4th ed.). Pearson.
 2. Sutton, R. S., & Barto, A. G. (2018). *Reinforcement Learning: An Introduction* (2nd ed.). MIT Press. Capítulo 6.  
 3. Bellemare, M. G., Naddaf, Y., Veness, J., & Bowling, M. (2013). The Arcade Learning Environment: An evaluation platform for general agents. Journal of Artificial Intelligence Research, 47, 253–279.
 4. Mnih, V. et al. (2015). Human-level control through deep reinforcement learning. Nature, 518(7540), 529–533.
->>>>>>> 29f97c0a3a0da78b88ccf4989baff0ada35d4571
